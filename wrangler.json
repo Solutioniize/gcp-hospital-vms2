@@ -16,7 +16,7 @@
 		{
 			"binding": "DB",
 			"database_name": "vms-db",
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "266fb06b-3645-4b84-a5a0-169905d0126c",
 			"migrations_dir": "migrations"
 		}
 	],
