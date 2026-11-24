@@ -9,6 +9,21 @@
 	},
 	"upload_source_maps": true,
 	"vars": {
-		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
-	}
+		"ACCESS_TEAM_DOMAIN": "",
+		"ACCESS_AUD": ""
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "vms-db",
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "DOCS",
+			"bucket_name": "vms-vendor-documents"
+		}
+	]
 }

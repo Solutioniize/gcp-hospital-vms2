@@ -1,109 +1,73 @@
-# Welcome to React Router + Cloudflare Workers!
+# Hospital Vendor Management System (GCP)
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/react-router-starter-template)
+A vendor management system for clinical research, built to support **Good Clinical Practice
+(ICH E6(R3))** oversight of service providers. It runs on Cloudflare Workers with React Router 7.
 
-![React Router Starter Template Preview](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/bfdc2f85-e5c9-4c92-128b-3a6711249800/public)
+## Feature: vendor onboarding and qualification
 
-<!-- dash-content-start -->
+- **Vendor register.** Holds each vendor's service category, contacts and **risk-based criticality**
+  (high, medium or low). Criticality sets which documents are required and how often the vendor
+  must be requalified (every 1, 2 or 3 years).
+- **Controlled documents.** Files are stored in R2 with a SHA-256 checksum, version history,
+  issue and expiry dates. A new version supersedes the old one, and nothing is deleted.
+- **Qualification assessment.** A weighted risk questionnaire produces a risk score and a
+  recommended outcome. A **second person** must approve the decision with an electronic
+  signature: they retype their sign-in email and confirm the meaning of the signature.
+  The decision can be Qualified, Conditionally qualified (conditions required) or Disqualified.
+  A vendor cannot be fully qualified while a required document is missing or expired.
+- **Dashboard.** Shows assessments waiting for approval, documents that are expired or expiring
+  within 2 months, and requalifications that are due or overdue.
+- **Audit trail.** Every change records who made it, when, the old and new values, and the reason.
+  Editing vendor details requires a reason. The `audit_log` table is append-only: database
+  triggers reject any UPDATE or DELETE.
 
-A modern, production-ready template for building full-stack React applications using [React Router](https://reactrouter.com/) and the [Cloudflare Vite plugin](https://developers.cloudflare.com/workers/vite-plugin/).
+> **Compliance note:** these are technical controls. Full 21 CFR Part 11 / EU Annex 11
+> compliance also needs computerised system validation, SOPs, access management and training.
 
-## Features
+## Architecture
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-- 🔎 Built-in Observability to monitor your Worker
-<!-- dash-content-end -->
+| Concern     | Choice |
+| ----------- | ------ |
+| App         | React Router 7 (SSR) on Cloudflare Workers |
+| Data        | Cloudflare D1 (`DB` binding), schema in `migrations/` |
+| Documents   | Cloudflare R2 (`DOCS` binding) |
+| Sign-in     | Cloudflare Access. Every request's JWT is verified in `app/lib/auth.server.ts` |
 
-## Getting Started
+## First-time setup
 
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/react-router-starter-template
-```
-
-A live public deployment of this template is available at [https://react-router-starter-template.templates.workers.dev](https://react-router-starter-template.templates.workers.dev)
-
-### Installation
-
-Install the dependencies:
-
-```bash
+```sh
 npm install
+
+# 1. Create the database and bucket in your Cloudflare account
+npx wrangler d1 create vms-db              # copy the database_id it prints into wrangler.json
+npx wrangler r2 bucket create vms-vendor-documents
+
+# 2. Apply the schema
+npx wrangler d1 migrations apply vms-db --local    # for local dev
+npx wrangler d1 migrations apply vms-db --remote   # for production
 ```
 
-### Development
+### Cloudflare Access (required in production)
 
-Start the development server with HMR:
+1. In Cloudflare Zero Trust, create a **self-hosted Access application** that covers the Worker's
+   hostname, and add a policy for the people who may use the VMS.
+2. In `wrangler.json`, set `ACCESS_TEAM_DOMAIN` (for example `yourteam.cloudflareaccess.com`)
+   and `ACCESS_AUD` (the application's Audience tag).
 
-```bash
+If these are not set, the deployed app refuses every request. It never runs without an identity.
+
+## Local development
+
+```sh
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Locally you are signed in as `dev.user@localhost`. To act as a second person, for example to
+approve an assessment you submitted, set a cookie in the browser console:
+`document.cookie = "vms_dev_user=qa.manager@hospital.example; path=/"`. This only works in dev.
 
-## Typegen
-
-Generate types for your Cloudflare bindings in `wrangler.json`:
-
-```sh
-npm run typegen
-```
-
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Previewing the Production Build
-
-Preview the production build locally:
-
-```bash
-npm run preview
-```
-
-## Deployment
-
-If you don't have a Cloudflare account, [create one here](https://dash.cloudflare.com/sign-up)! Go to your [Workers dashboard](https://dash.cloudflare.com/?to=%2F%3Aaccount%2Fworkers-and-pages) to see your [free custom Cloudflare Workers subdomain](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/) on `*.workers.dev`.
-
-Once that's done, you can build your app:
-
-```sh
-npm run build
-```
-
-And deploy it:
+## Deploy
 
 ```sh
 npm run deploy
 ```
-
-To deploy a preview URL:
-
-```sh
-npx wrangler versions upload
-```
-
-You can then promote a version to production after verification or roll it out progressively.
-
-```sh
-npx wrangler versions deploy
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
