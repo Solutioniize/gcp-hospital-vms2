@@ -1,0 +1,10 @@
+{
+  // Cloudflare Worker that serves the static portal in ./public
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gcp-hospital-vms2",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "single-page-application"
+  }
+}
