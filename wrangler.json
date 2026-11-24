@@ -3,7 +3,9 @@
 	"name": "gcp-hospital-vms2",
 	"main": "./workers/app.ts",
 	"compatibility_date": "2025-10-08",
-	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"observability": {
 		"enabled": true
 	},
@@ -25,5 +27,25 @@
 			"binding": "DOCS",
 			"bucket_name": "vms-vendor-documents"
 		}
-	]
+	],
+	"previews": {
+		"vars": {
+			"ACCESS_TEAM_DOMAIN": "",
+			"ACCESS_AUD": ""
+		},
+		"d1_databases": [
+			{
+				"binding": "DB",
+				"database_name": "vms-db-preview",
+				"database_id": "91122e41-440a-41a9-a2c6-6f9f71fb76bf",
+				"migrations_dir": "migrations"
+			}
+		],
+		"r2_buckets": [
+			{
+				"binding": "DOCS",
+				"bucket_name": "vms-vendor-documents-preview"
+			}
+		]
+	}
 }
